@@ -17,19 +17,15 @@ class StopFactorServiceTest {
     @Autowired
     private StopFactorService stopFactorService;
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
     @Test
     void searchStopFactor() {
         String regPersonString = "ISAAC ABRAHAM";
         String verifiedNameString = "ISAAC ABRAHAM";
 
-        boolean result = stopFactorService.searchLevenshteinDistance(regPersonString, verifiedNameString);
+        double result = stopFactorService.searchLevenshteinDistance(regPersonString, verifiedNameString);
+        double distanceThreshold = 0.9D;
 
-        assertTrue(result, "Расстояние Левенштейна должно быть меньше distanceRatioThreshold");
+        assertTrue(result < distanceThreshold, "Расстояние Левенштейна должно быть меньше distanceRatioThreshold");
     }
 
     @Test

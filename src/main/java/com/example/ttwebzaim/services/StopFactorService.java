@@ -1,8 +1,9 @@
 package com.example.ttwebzaim.services;
 
-import com.example.ttwebzaim.entitys.LoanRequest;
-import com.example.ttwebzaim.entitys.RegPerson;
-import com.example.ttwebzaim.entitys.VerifiedName;
+import com.example.ttwebzaim.model.LoanRequest;
+import com.example.ttwebzaim.model.RegPerson;
+import com.example.ttwebzaim.model.Settings;
+import com.example.ttwebzaim.model.VerifiedName;
 import com.example.ttwebzaim.repositories.SettingsRepository;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.slf4j.Logger;
@@ -12,8 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 @Service
@@ -29,21 +28,23 @@ public class StopFactorService {
 
     public boolean inputData(LoanRequest loanRequest) {
 
+        Settings settings = settingsRepository.findByName("distanceRatioThreshold")
+                .orElseThrow(() -> new IllegalArgumentException("distanceRatioThreshold setting not found"));
+
+
+        Double distanceThreshold = settings.getValue();
+
+        logger.info("distanceRatioThreshold: {}", distanceThreshold);
+
         String regPersonString = concatRegPerson(loanRequest.getRegPerson());
+
         String verifiedNameString = concatVerifiedName(
                 loanRequest.getCreditBureau().getVerifiedName());
 
-        return searchLevenshteinDistance(regPersonString, verifiedNameString);
-
+        return searchLevenshteinDistance(regPersonString, verifiedNameString) < distanceThreshold;
     }
 
-    public boolean searchLevenshteinDistance(String regPersonString, String verifiedNameString) {
-
-        Double distanceThreshold = settingsRepository.findDistanceRatioThreshold();
-        if (distanceThreshold == null) {
-            throw new IllegalArgumentException("distanceRatioThreshold setting not found");
-        }
-        logger.info("distanceRatioThreshold: {}", distanceThreshold);
+    public double searchLevenshteinDistance(String regPersonString, String verifiedNameString) {
 
         List<String> regPersons = generateWord(splitWords(regPersonString));
         List<String> verifiedNames = generateWord(splitWords(verifiedNameString));
@@ -51,11 +52,11 @@ public class StopFactorService {
         logger.info("Сгенерированные пары для regPerson: {}", regPersons);
         logger.info("Сгенерированные пары для verifiedName: {}", verifiedNames);
 
-        int maxDistance = findMaxLevenshteinDistance(regPersons, verifiedNames);
+        double maxDistance = findMaxLevenshteinDistance(regPersons, verifiedNames);
 
         logger.info("Найденное максимальное расстояние Левенштейна: {}", maxDistance);
 
-        return maxDistance < distanceThreshold;
+        return maxDistance;
     }
 
     private String concatRegPerson(RegPerson regPerson){

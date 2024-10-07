@@ -1,9 +1,9 @@
 package com.example.ttwebzaim.services;
 
-import com.example.ttwebzaim.entitys.AccountInfo;
-import com.example.ttwebzaim.entitys.LoanRequest;
-import com.example.ttwebzaim.entitys.CreditBureau;
-import com.example.ttwebzaim.entitys.RequestContent;
+import com.example.ttwebzaim.model.AccountInfo;
+import com.example.ttwebzaim.model.LoanRequest;
+import com.example.ttwebzaim.model.CreditBureau;
+import com.example.ttwebzaim.model.RequestContent;
 import com.example.ttwebzaim.repositories.LoanRequestRepository;
 import com.example.ttwebzaim.repositories.RequestContentRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,6 +43,8 @@ public class RequestContentService {
             try {
                 LoanRequest loanRequest = objectMapper.readValue(requestContent.getContent(), LoanRequest.class);
 
+
+
                 CreditBureau creditBureau = loanRequest.getCreditBureau();
                 if (creditBureau != null) {
                     for (AccountInfo accountInfo : creditBureau.getAccountInfos()) {
@@ -50,10 +52,17 @@ public class RequestContentService {
                     }
                 }
 
-                loanRequestRepository.save(loanRequest);
-
                 boolean stopFactor = stopFactorCalculator.inputData(loanRequest);
                 System.out.println("stop factor: " + stopFactor);
+
+                if (loanRequestRepository.existsByLoanUUIRequest(loanRequest.getLoanUUIRequest())) {
+//                    System.out.println("LoanRequest с loan_uui_request " + loanRequest.getLoanUUIRequest() + " уже существует в БД.");
+                    continue;
+                }
+
+                loanRequestRepository.save(loanRequest);
+
+
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
