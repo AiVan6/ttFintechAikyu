@@ -25,13 +25,13 @@ git clone https://github.com/AiVan6/ttFintechAikyu.git
 cd ttFintechAikyu
 ```
 
-2. Запустите сборку
+2. Запустите сборку<br>
 Перед запуском проверьте не занят ли у вас порт 5432
 
 ```Docker
 docker-compose up --build
 ```
-3. Остановка программы
+3. Остановка программы<br>
 Для остановки программы используйте сочетание клавиш ctr+c и после, если вы хотете завершить выполнение Docker 
 ```Docker
 docker-compose down
